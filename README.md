@@ -12,28 +12,27 @@
 
 ### Columns (12 total)
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `date` | Date | Date of catch |
-| `vessel_id` | Character | Vessel identifier (V-001 to V-030) |
-| `species` | Character | Fish species name (10 types) |
-| `catch_kg` | Numeric | Catch weight in kilograms |
-| `latitude` | Numeric | Latitude coordinate |
-| `longitude` | Numeric | Longitude coordinate |
-| `water_temp` | Numeric | Water temperature (°C) |
-| `depth_m` | Numeric | Fishing depth (meters) |
-| `zone` | Character | Fishing zone identifier |
-| `region` | Character | Geographic region (4 regions) |
-| `country` | Character | Country name |
-| `weather` | Character | Weather condition |
+| Column | Type | Description                          |
+|--------|------|--------------------------------------|
+| `date` | Date | Date of catch                        |
+| `vessel_id` | Character | Vessel identifier (V-1001 to V-1030) |
+| `species` | Character | Fish species name (10 types)         |
+| `catch_kg` | Numeric | Catch weight in kilograms            |
+| `latitude` | Numeric | Latitude coordinate                  |
+| `longitude` | Numeric | Longitude coordinate                 |
+| `water_temp` | Numeric | Water temperature (°C)               |
+| `depth_m` | Numeric | Fishing depth (meters)               |
+| `zone` | Character | Fishing zone identifier              |
+| `region` | Character | Geographic region (4 regions)        |
+| `country` | Character | Country name                         |
 
 ### Data Summary
-- 400 records
+- 1200 records
 - 30 vessels
 - 10 species (5 North Atlantic + 5 Australian)
 - 11 fishing zones
 - 4 regions (North Atlantic, Pacific Northwest, Australia, North Sea)
-- 30 days of data
+- 365 days of data
 
 ---
 
