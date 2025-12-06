@@ -11,25 +11,31 @@ vessels <- generate_vessel_data()
 catch_full <- catch %>%
   left_join(vessels, by = "vessel_id")
 
-ui <- fluidPage(
+ui <- bootstrapPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
-  titlePanel("Fisheries Catch Dashboard"),
-
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("country", "Country:", choices = sort(unique(catch_full$country))),
-      selectInput("species", "Species:", choices = NULL)
-    ),
-
-    mainPanel(
-      leafletOutput("map", height = 350),
-      br(),
-      plotOutput("total_catch_plot"),
-      br(),
-      plotOutput("cpue_plot")
-    )
+  
+  div(class = "outer",
+      # Full screen map as background
+      leafletOutput("map", width = "100%", height = "100%"),
+      
+      # Floating control panel
+      absolutePanel(
+        id = "controls",
+        top = 10, right = 10,
+        width = "30%",
+        draggable = TRUE,
+        
+        h3("Fisheries Catch Dashboard"),
+        selectInput("country", "Country:", choices = sort(unique(catch_full$country)), width = "100%"),
+        selectInput("species", "Species:", choices = NULL, width = "100%"),
+        
+        hr(),
+        plotOutput("total_catch_plot", height = 250),
+        hr(),
+        plotOutput("cpue_plot", height = 250)
+      )
   )
 )
 
@@ -57,7 +63,7 @@ server <- function(input, output, session) {
   })
 
   output$map <- renderLeaflet({
-    leaflet() %>%
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addTiles()
   })
   
@@ -78,12 +84,12 @@ server <- function(input, output, session) {
     # Calculate zoom based on data spread
     spread <- max(bounds$lng_range, bounds$lat_range)
     zoom <- case_when(
-      spread > 50 ~ 1,
-      spread > 20 ~ 2,
-      spread > 10 ~ 3,
-      spread > 5  ~ 4,
-      spread > 1  ~ 5,
-      TRUE        ~ 6
+      spread > 50 ~ 2,
+      spread > 20 ~ 3,
+      spread > 10 ~ 4,
+      spread > 5  ~ 5,
+      spread > 1  ~ 6,
+      TRUE        ~ 7
     )
     
     # Color palette with fallback for single observation
@@ -165,13 +171,18 @@ server <- function(input, output, session) {
       geom_col() +
       geom_text(aes(label = round(total_catch, 1)), vjust = -0.5, color = "black") +
       scale_fill_manual(values = season_colors) +
+      scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
       labs(
         title = paste("Total Catch per Season -", input$country),
-        x = "Season",
+        x = NULL,
         y = "Catch (kg)"
       ) +
       theme_minimal() +
-      theme(legend.position = "none")
+      theme(
+        legend.position = "none",
+        axis.text.x = element_text(face = "bold"),
+        axis.text.y = element_text(face = "bold")
+      )
   })
   
   # CPUE trend over time - assesses fishing efficiency relative to crew size

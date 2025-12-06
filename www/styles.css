@@ -1,5 +1,47 @@
+/* Full screen outer container */
+div.outer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Customize fonts */
+body, label, input, button, select { 
+  font-family: 'Helvetica Neue', Helvetica;
+  font-weight: 200;
+}
+h1, h2, h3, h4 { font-weight: 400; }
+
+/* Floating control panel */
+#controls {
+  background-color: white;
+  padding: 0 20px 20px 20px;
+  cursor: move;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  /* Fade out while not hovering */
+  opacity: 0.65;
+  zoom: 0.9;
+  transition: opacity 500ms 1s;
+}
+
+#controls:hover {
+  /* Fade in while hovering */
+  opacity: 0.95;
+  transition-delay: 0;
+}
+
 /* Leaflet map legend - scale down for compact display */
 .leaflet .legend {
   transform: scale(0.7);
   transform-origin: bottom left;
+}
+
+/* White background if no map tiles */
+.leaflet-container {
+  background-color: white !important;
 }
