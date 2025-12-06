@@ -46,13 +46,11 @@ server <- function(input, output, session) {
     updateSelectInput(session, "species", choices = species_choices, selected = selected)
   })
   
-
-  country_data <- reactive({
-    catch_full %>% filter(country == input$country)
-  })
-
-  filtered_data <- reactive({
-    country_data() %>% filter(species == input$species)
+  # Filter data based on selected country and species
+  filtered_data <- eventReactive(c(input$country, input$species), {
+    req(input$country, input$species)
+    catch_full %>%
+      filter(country == input$country, species == input$species)
   })
 
   output$map <- renderLeaflet({
