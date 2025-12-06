@@ -1,7 +1,9 @@
 library(shiny)
-library(tidyverse)
+library(dplyr)
 library(lubridate)
 library(leaflet)
+library(ggplot2)
+library(tidyr)
 
 # Load datasets
 source("dummy_data_generator.R")
