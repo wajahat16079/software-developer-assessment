@@ -6,7 +6,7 @@ library(lubridate)
 #' @return A data frame with fisheries data
 generate_fisheries_data <- function() {
   set.seed(1281216)
-
+  
   # Define fishing zones across multiple regions
   zones <- list(
     # North Atlantic
@@ -28,7 +28,7 @@ generate_fisheries_data <- function() {
       lon_range = c(-40, -30),
       country = "Iceland"
     ),
-
+    
     # Australia - Great Barrier Reef
     australia_gbr = list(
       region = "Australia",
@@ -54,7 +54,7 @@ generate_fisheries_data <- function() {
       lon_range = c(113, 118),
       country = "Australia"
     ),
-
+    
     # Pacific Northwest
     pacific_nw_1 = list(
       region = "Pacific Northwest",
@@ -68,7 +68,7 @@ generate_fisheries_data <- function() {
       lon_range = c(-135, -130),
       country = "Canada"
     ),
-
+    
     # North Sea
     north_sea_1 = list(
       region = "North Sea",
@@ -83,7 +83,7 @@ generate_fisheries_data <- function() {
       country = "Norway"
     )
   )
-
+  
   # Define species with their typical catch weights and preferred regions
   species_info <- data.frame(
     species = c("Tuna", "Salmon", "Cod", "Haddock", "Mackerel",
@@ -94,10 +94,10 @@ generate_fisheries_data <- function() {
                          "Australia", "Australia", "Australia", "Australia", "Australia"),
     stringsAsFactors = FALSE
   )
-
+  
   # Generate 1200 catch records over the past year
   n_records <- 1200
-
+  
   data <- data.frame(
     date = sample(seq(Sys.Date() - 365, Sys.Date(), by = "day"), n_records, replace = TRUE),
     vessel_id = paste0("V-", sample(1001:1030, n_records, replace = TRUE)),
@@ -111,7 +111,7 @@ generate_fisheries_data <- function() {
       longitude = runif(1, zones[[zone]]$lon_range[1], zones[[zone]]$lon_range[2])
     ) %>%
     ungroup()
-
+  
   # Assign species based on region preferences
   data <- data %>%
     rowwise() %>%
@@ -153,7 +153,7 @@ generate_fisheries_data <- function() {
     select(date, vessel_id, species, catch_kg, latitude, longitude,
            water_temp, depth_m, region, country, zone, season) %>%
     arrange(desc(date))
-
+  
   return(data)
 }
 
@@ -161,7 +161,7 @@ generate_fisheries_data <- function() {
 #' @return A data frame with vessel details
 generate_vessel_data <- function() {
   vessel_ids <- paste0("V-", 1001:1030)
-
+  
   data.frame(
     vessel_id = vessel_ids,
     vessel_name = paste("Fishing Vessel", 1001:1030),
@@ -176,3 +176,26 @@ generate_vessel_data <- function() {
                          length(vessel_ids), replace = TRUE)
   )
 }
+
+
+# Generate and save the combined dataset
+catch <- generate_fisheries_data()
+vessels <- generate_vessel_data()
+
+catch_full <- catch %>%
+  left_join(vessels, by = "vessel_id") %>%
+  select(
+    date,
+    country,
+    species,
+    latitude,
+    longitude,
+    catch_kg,
+    season,
+    crew_size,
+    vessel_name,
+    port
+  )
+
+saveRDS(catch_full, "catch_full.rds")
+message("Data generated and saved to catch_full.rds")

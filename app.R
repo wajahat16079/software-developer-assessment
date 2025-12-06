@@ -5,13 +5,9 @@ library(leaflet)
 library(ggplot2)
 library(tidyr)
 
-# Load datasets
-source("dummy_data_generator.R")
-catch <- generate_fisheries_data()
-vessels <- generate_vessel_data()
 
-catch_full <- catch %>%
-  left_join(vessels, by = "vessel_id")
+# Load datasets
+catch_full <- readRDS("catch_full.rds")
 
 ui <- bootstrapPage(
   tags$head(
@@ -28,7 +24,7 @@ ui <- bootstrapPage(
         top = 10, right = 10,
         width = "30%",
         draggable = TRUE,
-        
+
         h3("Fisheries Catch Dashboard"),
         selectInput("country", "Country:", choices = sort(unique(catch_full$country)), width = "100%"),
         selectInput("species", "Species:", choices = NULL, width = "100%"),
@@ -124,7 +120,7 @@ server <- function(input, output, session) {
         color = "#333",
         weight = 1,
         popup = ~tooltip,
-        label = ~lapply(tooltip, htmltools::HTML),
+        label = ~lapply(tooltip,HTML),
         fillOpacity = 0.7
       ) %>%
       flyTo(lng = bounds$lng, lat = bounds$lat, zoom = zoom)
