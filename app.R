@@ -6,7 +6,7 @@ library(ggplot2)
 library(tidyr)
 
 
-# Load datasets
+# Load dataset
 catch_full <- readRDS("catch_full.rds")
 
 ui <- bootstrapPage(
@@ -188,8 +188,8 @@ server <- function(input, output, session) {
     req(nrow(filtered_data()) > 0)
     
     plot_data <- filtered_data() %>%
+      filter(!is.na(crew_size)) %>%
       mutate(cpue = catch_kg / crew_size) %>%
-      filter(!is.na(cpue)) %>%
       group_by(date) %>%
       summarize(avg_cpue = mean(cpue), .groups = "drop")
     
