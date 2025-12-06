@@ -1,0 +1,43 @@
+name: Deploy to Shiny Server
+
+on:
+  push:
+    branches: [ main ]  # Run workflow whenever code is pushed to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Checkout repository code inside the GitHub Actions runner
+      - name: Checkout repository
+        uses: actions/checkout@v2 
+      
+      - name: Deploy to Shiny Server
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH key for login
+          HOSTNAME: ${{ secrets.SSH_HOST }}            # Server IP / domain
+          USER_NAME: ${{ secrets.USER_NAME }}          # Linux user on server
+      
+        run: |
+          # 2. Create SSH private key file used for authentication
+          echo "$PRIVATE_KEY" > private_key
+          chmod 600 private_key
+
+          # 3. SSH into your Shiny server and run deployment commands
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+              
+              # --- Step A: Go to Shiny app directory on the server ---
+              cd /srv/shiny-server/software-developer-assessment
+              
+              # --- Step B: Allow Git to operate inside this directory ---
+              sudo -u shiny git config --global --add safe.directory /srv/shiny-server/software-developer-assessment
+              
+              # --- Step C: Pull latest code from GitHub (as shiny user) ---
+              sudo -u shiny git fetch --all
+              sudo -u shiny git reset --hard origin/main
+              
+              # --- Step D: Fix permissions so Shiny Server can read/run files ---
+              sudo chown -R shiny:shiny /srv/shiny-server/software-developer-assessment
+              sudo chmod -R 755 /srv/shiny-server/software-developer-assessment
+          '
