@@ -174,22 +174,34 @@ server <- function(input, output, session) {
       theme(legend.position = "none")
   })
   
+  # CPUE trend over time - assesses fishing efficiency relative to crew size
   output$cpue_plot <- renderPlot({
     req(nrow(filtered_data()) > 0)
-    filtered_data() %>%
+    
+    plot_data <- filtered_data() %>%
       mutate(cpue = catch_kg / crew_size) %>%
-      filter(!is.na(cpue)) %>% # remove NAs for continuous line
+      filter(!is.na(cpue)) %>%
       group_by(date) %>%
-      summarize(avg_cpue = mean(cpue), .groups = "drop") %>%
-      ggplot(aes(x = date, y = avg_cpue)) +
-      geom_line() +
-      geom_point() +
-      labs(
-        title = paste("Catch per Unit Effort (CPUE) -", input$species),
-        x = "Date",
-        y = "CPUE (kg per crew member)"
-      ) +
-      theme_minimal()
+      summarize(avg_cpue = mean(cpue), .groups = "drop")
+    
+    # Show message if no valid CPUE data
+    if (nrow(plot_data) == 0) {
+      ggplot() +
+        annotate("text", x = 0.5, y = 0.5, label = "No valid CPUE data\n(missing crew size)", 
+                 size = 6, color = "gray50") +
+        theme_void() +
+        labs(title = paste("Catch per Unit Effort (CPUE) -", input$species))
+    } else {
+      ggplot(plot_data, aes(x = date, y = avg_cpue)) +
+        geom_point(size = 3) +
+        geom_line() +
+        labs(
+          title = paste("Catch per Unit Effort (CPUE) -", input$species),
+          x = "Date",
+          y = "CPUE (kg per crew member)"
+        ) +
+        theme_minimal()
+    }
   })
 }
 
