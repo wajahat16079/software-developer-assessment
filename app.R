@@ -12,6 +12,9 @@ catch_full <- catch %>%
   left_join(vessels, by = "vessel_id")
 
 ui <- fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+  ),
   titlePanel("Fisheries Catch Dashboard"),
 
   sidebarLayout(
@@ -62,6 +65,8 @@ server <- function(input, output, session) {
   observeEvent(filtered_data(), {
     dat <- filtered_data()
     
+    req(nrow(dat) > 0)
+    
     bounds <- dat %>%
       summarize(
         lng = mean(longitude, na.rm = TRUE),
@@ -73,31 +78,75 @@ server <- function(input, output, session) {
     # Calculate zoom based on data spread
     spread <- max(bounds$lng_range, bounds$lat_range)
     zoom <- case_when(
-      spread > 50 ~ 2,
-      spread > 20 ~ 3,
-      spread > 10 ~ 4,
-      spread > 5  ~ 5,
-      spread > 1  ~ 6,
-      TRUE        ~ 7
+      spread > 50 ~ 1,
+      spread > 20 ~ 2,
+      spread > 10 ~ 3,
+      spread > 5  ~ 4,
+      spread > 1  ~ 5,
+      TRUE        ~ 6
     )
     
-    leafletProxy("map", data = dat) %>%
-      clearMarkers() %>%
-      addCircleMarkers(
-        ~longitude, ~latitude,
-        radius = ~sqrt(catch_kg)/5,
-        popup = ~paste0(
+    # Color palette with fallback for single observation
+    single_value <- nrow(dat) == 1 || min(dat$catch_kg, na.rm = TRUE) == max(dat$catch_kg, na.rm = TRUE)
+    
+    if (single_value) {
+      pal <- function(x) "#B71C1C"
+    } else {
+      pal <- colorNumeric("Reds", domain = dat$catch_kg)
+    }
+    
+    # Create tooltip content for popup and label
+    dat <- dat %>%
+      mutate(
+        tooltip = paste0(
           "<b>Species:</b> ", species,
-          "<br><b>Catch (kg):</b> ", catch_kg,
+          "<br><b>Catch (kg):</b> ", round(catch_kg, 2),
           "<br><b>Vessel:</b> ", vessel_name,
           "<br><b>Port:</b> ", port
-        ),
+        )
+      )
+    
+    map <- leafletProxy("map", data = dat) %>%
+      clearMarkers() %>%
+      clearControls() %>%
+      addCircleMarkers(
+        ~longitude, ~latitude,
+        radius = ~sqrt(catch_kg)/2.5,
+        fillColor = ~pal(catch_kg),
+        color = "#333",
+        weight = 1,
+        popup = ~tooltip,
+        label = ~lapply(tooltip, htmltools::HTML),
         fillOpacity = 0.7
       ) %>%
       flyTo(lng = bounds$lng, lat = bounds$lat, zoom = zoom)
+    
+    # Add legend - different approach for single vs multiple values
+    if (single_value) {
+      map <- map %>%
+        addLegend(
+          position = "bottomleft",
+          colors = "#B71C1C",
+          labels = paste0(round(dat$catch_kg[1], 2), " kg"),
+          title = paste0(input$species, " - ", input$country, "<br>Catch (kg)"),
+          className = "info legend small-legend"
+        )
+    } else {
+      map <- map %>%
+        addLegend(
+          position = "bottomleft",
+          pal = pal,
+          values = ~catch_kg,
+          title = paste0(input$species, " - ", input$country, "<br>Catch (kg)"),
+          className = "info legend small-legend"
+        )
+    }
+    
+    map
   })
 
   output$total_catch_plot <- renderPlot({
+    req(nrow(filtered_data()) > 0)
     # Define fixed colors for each season
     season_colors <- c(
       "Spring" = "#6B8E6B",
@@ -126,6 +175,7 @@ server <- function(input, output, session) {
   })
   
   output$cpue_plot <- renderPlot({
+    req(nrow(filtered_data()) > 0)
     filtered_data() %>%
       mutate(cpue = catch_kg / crew_size) %>%
       filter(!is.na(cpue)) %>% # remove NAs for continuous line

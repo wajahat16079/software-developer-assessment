@@ -1,0 +1,5 @@
+/* Leaflet map legend - scale down for compact display */
+.leaflet .legend {
+  transform: scale(0.7);
+  transform-origin: bottom left;
+}
