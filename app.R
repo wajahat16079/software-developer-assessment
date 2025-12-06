@@ -2,6 +2,7 @@ library(shiny)
 library(dplyr)
 library(lubridate)
 library(leaflet)
+library(ggplot2)
 
 # Load datasets
 source("dummy_data_generator.R")
