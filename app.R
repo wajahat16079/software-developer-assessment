@@ -140,8 +140,6 @@ server <- function(input, output, session) {
           colors = "#B71C1C",
           labels = paste0(round(dat$catch_kg[1], 2), " kg"),
           title = paste0(input$species, " - ", input$country, "<br>Catch (kg)")
-          # ,
-          # className = "info legend small-legend"
         )
     } else {
       map <- map %>%
@@ -150,8 +148,6 @@ server <- function(input, output, session) {
           pal = pal,
           values = ~catch_kg,
           title = paste0(input$species, " - ", input$country, "<br>Catch (kg)")
-          # ,
-          # className = "info legend small-legend"
         )
     }
     

@@ -59,6 +59,13 @@ An enhanced Shiny application for visualizing and analyzing fisheries catch data
 - Graceful handling of single-value datasets (custom legend rendering)
 - Species selection preserved when switching countries if still valid
 
+**Multiple Base Layers:**
+- OpenStreetMap (default) - Standard street map view
+- Ocean Basemap - Esri bathymetry and marine features for fisheries context
+- Satellite - Esri World Imagery for coastal visualization
+- Layer toggle positioned top-left, collapsed by default; zoom controls removed for cleaner UI
+
+
 ### 4. Unit Testing (Option #6)
 
 Added test suite using `testthat` to validate data integrity:
