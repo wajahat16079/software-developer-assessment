@@ -34,14 +34,3 @@ h1, h2, h3, h4 { font-weight: 400; }
   opacity: 0.95;
   transition-delay: 0;
 }
-
-/* Leaflet map legend - scale down for compact display */
-.leaflet .legend {
-  transform: scale(0.7);
-  transform-origin: bottom left;
-}
-
-/* White background if no map tiles */
-.leaflet-container {
-  background-color: white !important;
-}

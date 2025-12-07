@@ -15,7 +15,7 @@ An enhanced Shiny application for visualizing and analyzing fisheries catch data
 
 ### 2. Performance Improvements (Option #2)
 
-**Data Caching:**
+**Data Preprocessing:**
 - Pre-compute and save the joined dataset to `catch_full.rds` instead of generating data at runtime
 - Run `dummy_data_generator.R` once to prepare the cached data file
 - Reduces app startup time significantly
@@ -25,7 +25,7 @@ An enhanced Shiny application for visualizing and analyzing fisheries catch data
 - Reduces memory footprint and file size
 
 **Individual Package Imports:**
-- Import specific packages (`dplyr`, `tidyr`, `lubridate`, `ggplot2`, `leaflet`) instead of loading the entire `tidyverse`
+- Import specific packages (`dplyr`, `tidyr`, `lubridate`, `ggplot2`) instead of loading the entire `tidyverse`
 - Faster load times and reduced memory usage
 
 **Reactive Optimization:**
@@ -59,6 +59,13 @@ An enhanced Shiny application for visualizing and analyzing fisheries catch data
 - Graceful handling of single-value datasets (custom legend rendering)
 - Species selection preserved when switching countries if still valid
 
+**Multiple Base Layers:**
+- OpenStreetMap (default) - Standard street map view
+- Ocean Basemap - Esri bathymetry and marine features for fisheries context
+- Satellite - Esri World Imagery for coastal visualization
+- Layer toggle positioned top-left, collapsed by default; zoom controls removed for cleaner UI
+
+
 ### 4. Unit Testing (Option #6)
 
 Added test suite using `testthat` to validate data integrity:
@@ -87,7 +94,7 @@ install.packages(c("shiny", "dplyr", "tidyr", "lubridate", "leaflet", "ggplot2",
 
 ### Data Preparation
 
-Before running the app, generate the cached data file:
+Before running the app, generate the preprocessed data file:
 
 ```r
 source("dummy_data_generator.R")
@@ -137,13 +144,6 @@ Expected output:
 - **Season Definition:** Seasons are defined for Southern Hemisphere (Australian data comprises a significant portion). This affects how months map to seasons.
 - **Map Tile Provider:** Uses default OpenStreetMap tiles. For production, a dedicated tile server or commercial provider might be preferred.
 
-## Deployed Application
-
-Live application: [Add your deployment URL here]
-
-## Repository
-
-GitHub: [Add your forked repository URL here]
 
 ## Session Info
 
@@ -169,3 +169,5 @@ loaded via a namespace (and not attached):
 [43] Rcpp_1.0.13-1      systemfonts_1.1.0  tibble_3.2.1       tidyselect_1.2.1   rstudioapi_0.17.1  farver_2.1.2      
 [49] xtable_1.8-4       htmltools_0.5.8.1  labeling_0.4.3     compiler_4.4.0    
 ```
+
+- **Environment Reproducibility:** Although not required, using `renv` to create an `renv.lock` file is recommended for long-term stability. This ensures all package versions are pinned, making the development and deployment environments consistent—especially useful when deploying to Shiny Server or collaborating across machines.

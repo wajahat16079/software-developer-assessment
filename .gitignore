@@ -1,0 +1,58 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session data files
+.RData
+.Ruserdata
+
+# RStudio files
+.Rproj.user/
+*.Rproj
+
+# Temporary files created by R
+*.Rout
+*.Rout.save
+*.Rcheck/
+*.Rprofile
+
+# knitr / rmarkdown caches
+*_cache/
+cache/
+*.utf8.md
+*.knit.md
+
+# pkgdown site
+docs/
+pkgdown/
+
+# renv
+renv/library/
+renv/staging/
+
+# Targets (targets package)
+_targets/
+target/
+
+# Packrat
+packrat/lib*/
+packrat/src/
+packrat/packrat.lock
+packrat/packrat.opts
+
+# HTML and generated files
+*.html
+
+# ShinyApps
+rsconnect/
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Python virtual envs (if mixing R + Python)
+venv/
+.env/

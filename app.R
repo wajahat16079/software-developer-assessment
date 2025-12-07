@@ -24,7 +24,7 @@ ui <- bootstrapPage(
         top = 10, right = 10,
         width = "30%",
         draggable = TRUE,
-
+        
         h3("Fisheries Catch Dashboard"),
         selectInput("country", "Country:", choices = sort(unique(catch_full$country)), width = "100%"),
         selectInput("species", "Species:", choices = NULL, width = "100%"),
@@ -38,8 +38,8 @@ ui <- bootstrapPage(
 )
 
 server <- function(input, output, session) {
-
-
+  
+  
   # Update species choices when country changes, preserving selection if still valid
   observeEvent(input$country, {
     species_choices <- catch_full %>%
@@ -59,12 +59,19 @@ server <- function(input, output, session) {
     catch_full %>%
       filter(country == input$country, species == input$species)
   })
-
+  
   output$map <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addTiles()
+      addTiles(group = "OpenStreetMap") %>%
+      addProviderTiles(providers$Esri.OceanBasemap, group = "Ocean Basemap") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+      addLayersControl(
+        baseGroups = c("OpenStreetMap", "Ocean Basemap", "Satellite"),
+        position = "topleft",
+        options = layersControlOptions(collapsed = TRUE)
+      ) %>%
+      setView(lng = 0, lat = 20, zoom = 2)
   })
-  
   # Update map when filtered data changes
   observeEvent(filtered_data(), {
     dat <- filtered_data()
@@ -115,10 +122,10 @@ server <- function(input, output, session) {
       clearControls() %>%
       addCircleMarkers(
         ~longitude, ~latitude,
-        radius = ~sqrt(catch_kg)/2.5,
+        radius = 7,
         fillColor = ~pal(catch_kg),
-        color = "#333",
-        weight = 1,
+        color = "#000000",
+        weight = 2,
         popup = ~tooltip,
         label = ~lapply(tooltip,HTML),
         fillOpacity = 0.7
@@ -132,8 +139,7 @@ server <- function(input, output, session) {
           position = "bottomleft",
           colors = "#B71C1C",
           labels = paste0(round(dat$catch_kg[1], 2), " kg"),
-          title = paste0(input$species, " - ", input$country, "<br>Catch (kg)"),
-          className = "info legend small-legend"
+          title = paste0(input$species, " - ", input$country, "<br>Catch (kg)")
         )
     } else {
       map <- map %>%
@@ -141,14 +147,13 @@ server <- function(input, output, session) {
           position = "bottomleft",
           pal = pal,
           values = ~catch_kg,
-          title = paste0(input$species, " - ", input$country, "<br>Catch (kg)"),
-          className = "info legend small-legend"
+          title = paste0(input$species, " - ", input$country, "<br>Catch (kg)")
         )
     }
     
     map
   })
-
+  
   output$total_catch_plot <- renderPlot({
     req(nrow(filtered_data()) > 0)
     # Define fixed colors for each season
@@ -171,12 +176,13 @@ server <- function(input, output, session) {
       scale_fill_manual(values = season_colors) +
       scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
       labs(
-        title = paste("Total Catch per Season -", input$country),
+        title = paste("Total Catch per Season -", input$country, "-", input$species),
         x = NULL,
         y = "Catch (kg)"
       ) +
       theme_minimal() +
       theme(
+        plot.title = element_text(size = 16, face = "bold"),
         legend.position = "none",
         axis.text.x = element_text(face = "bold"),
         axis.text.y = element_text(face = "bold")
@@ -187,29 +193,35 @@ server <- function(input, output, session) {
   output$cpue_plot <- renderPlot({
     req(nrow(filtered_data()) > 0)
     
+    common_theme <- theme_minimal() +
+      theme(
+        plot.title = element_text(size = 16, face = "bold"),
+        legend.position = "none",
+        axis.text.x = element_text(face = "bold"),
+        axis.text.y = element_text(face = "bold")
+      )
+    
+    plot_title <- paste("CPUE Trend -", input$country, "-", input$species)
+    plot_subtitle <- "CPUE = Catch Per Unit Effort (kg per crew member)"
+    
     plot_data <- filtered_data() %>%
       filter(!is.na(crew_size)) %>%
       mutate(cpue = catch_kg / crew_size) %>%
       group_by(date) %>%
       summarize(avg_cpue = mean(cpue), .groups = "drop")
     
-    # Show message if no valid CPUE data
     if (nrow(plot_data) == 0) {
       ggplot() +
         annotate("text", x = 0.5, y = 0.5, label = "No valid CPUE data\n(missing crew size)", 
                  size = 6, color = "gray50") +
-        theme_void() +
-        labs(title = paste("Catch per Unit Effort (CPUE) -", input$species))
+        labs(title = plot_title, subtitle = plot_subtitle) +
+        common_theme
     } else {
       ggplot(plot_data, aes(x = date, y = avg_cpue)) +
         geom_point(size = 3) +
         geom_line() +
-        labs(
-          title = paste("Catch per Unit Effort (CPUE) -", input$species),
-          x = "Date",
-          y = "CPUE (kg per crew member)"
-        ) +
-        theme_minimal()
+        labs(title = plot_title, subtitle = plot_subtitle, x = "Date", y = "CPUE") +
+        common_theme
     }
   })
 }
